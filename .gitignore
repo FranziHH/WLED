@@ -15,7 +15,9 @@ platformio_override.ini
 replace_fs.py
 wled-update.sh
 extensions.json
-my_platformio_override.ini.*
+*.ini.*
+*.cpp.*
+*.h.*
 *.patch
 
 /build_output/
