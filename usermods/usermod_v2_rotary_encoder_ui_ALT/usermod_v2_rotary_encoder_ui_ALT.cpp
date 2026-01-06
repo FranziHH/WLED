@@ -74,6 +74,10 @@
  #define LAST_UI_STATE 4
 #endif
 
+#ifndef SELECT_STATE_DEFAULT
+  #define SELECT_STATE_DEFAULT 0
+#endif
+
 // Number of modes at the start of the list to not sort
 #define MODE_SORT_SKIP_COUNT 1
 
@@ -134,6 +138,31 @@ static int re_qstringCmp(const void *ap, const void *bp) {
   return 0;
 }
 
+static int re_qstringCmp_Effects(const void* ap, const void* bp)
+{
+    byte a = *(const byte*)ap;
+    byte b = *(const byte*)bp;
+
+    const char* sa = listBeingSorted[a];
+    const char* sb = listBeingSorted[b];
+
+    // Vergleich NUR bis '@', CASE-INSENSITIVE
+    while (*sa && *sb && *sa != '@' && *sb != '@') {
+        char ca = tolower((unsigned char)*sa);
+        char cb = tolower((unsigned char)*sb);
+
+        if (ca != cb) return ca - cb;
+
+        sa++;
+        sb++;
+    }
+
+    // Kürzerer Name kommt zuerst
+    if (*sa == '@' && *sb != '@') return -1;
+    if (*sa != '@' && *sb == '@') return 1;
+
+    return 0;
+}
 
 static volatile uint8_t pcfPortData = 0;                // port expander port state
 static volatile uint8_t addrPcf8574 = PCF8574_ADDRESS;  // has to be accessible in ISR
@@ -225,6 +254,7 @@ class RotaryEncoderUIUsermod : public Usermod {
     static const char _pcf8574[];
     static const char _pcfAddress[];
     static const char _pcfINTpin[];
+    static const char _selectStateDefault[];
 
     /**
      * readPin() - read rotary encoder pin value
@@ -249,6 +279,8 @@ class RotaryEncoderUIUsermod : public Usermod {
      */
     void re_sortModes(const char **modeNames, byte *indexes, int count, int numSkip);
 
+    void re_sortModes_Effects(const char **modeNames, byte *indexes, int count, int numSkip);
+
   public:
 
     RotaryEncoderUIUsermod()
@@ -260,7 +292,7 @@ class RotaryEncoderUIUsermod : public Usermod {
       , pinA(ENCODER_DT_PIN)
       , pinB(ENCODER_CLK_PIN)
       , pinC(ENCODER_SW_PIN)
-      , select_state(0)
+      , select_state(SELECT_STATE_DEFAULT)
       , currentHue1(16)
       , currentSat1(255)
       , currentCCT(128)
@@ -398,7 +430,7 @@ void RotaryEncoderUIUsermod::sortModesAndPalettes() {
   //modes_qstrings = re_findModeStrings(JSON_mode_names, strip.getModeCount());
   modes_qstrings = strip.getModeDataSrc();
   modes_alpha_indexes = re_initIndexArray(strip.getModeCount());
-  re_sortModes(modes_qstrings, modes_alpha_indexes, strip.getModeCount(), MODE_SORT_SKIP_COUNT);
+  re_sortModes_Effects(modes_qstrings, modes_alpha_indexes, strip.getModeCount(), MODE_SORT_SKIP_COUNT);
 
   DEBUG_PRINT(F("Sorting palettes: ")); DEBUG_PRINT(getPaletteCount()); DEBUG_PRINT('/'); DEBUG_PRINTLN(customPalettes.size());
   palettes_qstrings = re_findModeStrings(JSON_palette_names, getPaletteCount()); // allocates memory for all palette names
@@ -473,6 +505,12 @@ void RotaryEncoderUIUsermod::re_sortModes(const char **modeNames, byte *indexes,
   listBeingSorted = nullptr;
 }
 
+void RotaryEncoderUIUsermod::re_sortModes_Effects(const char **modeNames, byte *indexes, int count, int numSkip) {
+  if (!modeNames) return;
+  listBeingSorted = modeNames;
+  qsort(indexes + numSkip, count - numSkip, sizeof(byte), re_qstringCmp_Effects);
+  listBeingSorted = nullptr;
+}
 
 // public methods
 
@@ -529,8 +567,22 @@ void RotaryEncoderUIUsermod::setup()
   // But it's optional. But you want it.
   display = (FourLineDisplayUsermod*) UsermodManager::lookup(USERMOD_ID_FOUR_LINE_DISP);
   if (display != nullptr) {
-    display->setMarkLine(1, 0);
+    switch (select_state) {
+      case  0: display->setMarkLine(    1,   0); break; //1  = sun
+      case  1: display->setMarkLine(    1,   4); break; //2  = skip forward
+      case  2: display->setMarkLine(    1,   8); break; //3  = fire
+      case  3: display->setMarkLine(    2,   0); break; //4  = custom palette
+      case  4: display->setMarkLine(    3,   0); break; //5  = puzzle piece
+/*       case  5: display->setMarkLine(  255, 255); break; //7  = brush
+      case  6: display->setMarkLine(  255, 255); break; //8  = contrast
+      case  7: display->setMarkLine(  255, 255); break; //10 = star
+      case  8: display->setMarkLine(  255, 255); break; //11 = heart
+      case  9: display->setMarkLine(  255, 255); break; //10 = star
+      case 10: display->setMarkLine(  255, 255); break; //10 = star
+      case 11: display->setMarkLine(  255, 255); break; //10 = star */
   }
+  }
+
 #endif
 
   initDone = true;
@@ -752,6 +804,95 @@ void RotaryEncoderUIUsermod::changeBrightness(bool increase) {
 #endif
 }
 
+String getEffectFlags(uint16_t fx) {
+    String data = strip.getModeData(fx);
+    int lastSemi = data.lastIndexOf(';');
+    if (lastSemi < 0) return String();
+    String flags = data.substring(lastSemi + 1);
+    flags.trim();
+    return flags;
+}
+
+static char* getFlag(const char* str) {
+    if (!str) return nullptr;
+
+    const char* start = str;
+    int semicolonCount = 0;
+
+    for (const char* p = str; ; ++p) {
+        if (*p == ';' || *p == '\0') {
+            if (semicolonCount == 3) { // drittes Feld gefunden
+                size_t len = p - start;
+                char* result = (char*)malloc(len + 1);
+                if (!result) return nullptr;
+                memcpy(result, start, len);
+                result[len] = '\0';
+                return result;
+            }
+            semicolonCount++;
+            start = p + 1;
+        }
+        if (*p == '\0') break;
+    }
+
+    return nullptr; // Feld 3 nicht gefunden
+}
+
+static uint8_t fieldStringToNumber(const char* field) {
+    if (!field || !*field) return 0;
+
+    uint8_t value = 0;
+
+    while (*field) {
+        if (!isdigit((unsigned char)*field)) break; // erstes nicht-numerisches Zeichen
+        value = value * 10 + (*field - '0');
+        field++;
+    }
+
+    return value;
+}
+
+bool isMatrixActive() {
+    for (uint8_t i = 0; i < strip.getSegmentsNum(); i++) {
+        const Segment& seg = strip.getSegment(i);
+        if (seg.stopY > (seg.startY + 1)) return true;  // Segment hat Höhe -> 2D aktiv
+    }
+    return false;
+}
+
+static bool isBitSet(uint8_t value, uint8_t bitIndex) {
+    if (bitIndex > 7) return false;
+    return (value & (1 << bitIndex)) != 0;
+}
+
+bool isFxVisible(uint16_t fx) {
+  const char* name = strip.getModeData(fx);
+  uint8_t num_flag = fieldStringToNumber(getFlag(name));
+  bool is2D = isBitSet(num_flag, 1); // | isBitSet(num_flag, 2);
+  if (isBitSet(num_flag, 0)) is2D = false;
+
+  #ifdef WLED_DEBUG
+    DEBUG_PRINT(F("fx: "));
+    DEBUG_PRINTLN(fx);
+    DEBUG_PRINT(F("name: "));
+    DEBUG_PRINTLN(name);
+    DEBUG_PRINT(F("flags: "));
+    DEBUG_PRINTLN(getEffectFlags(fx));
+    DEBUG_PRINT(F("num_flag: "));
+    DEBUG_PRINTLN(num_flag);
+    DEBUG_PRINTLN(is2D);
+  #endif
+
+  // GUI-Filter 1
+  if (strncmp_P("RSVD", name, 4) == 0) return false;
+  if (*name == '-') return false;
+
+  // GUI-Filter 2: 2D-Effekte
+  // https://kno.wled.ge/features/effects/
+  if (!isMatrixActive() && is2D) return false;
+
+  return true;
+}
 
 void RotaryEncoderUIUsermod::changeEffect(bool increase) {
 #ifdef USERMOD_FOUR_LINE_DISPLAY
@@ -762,8 +903,26 @@ void RotaryEncoderUIUsermod::changeEffect(bool increase) {
   }
   display->updateRedrawTime();
 #endif
-  effectCurrentIndex = max(min((increase ? effectCurrentIndex+1 : effectCurrentIndex-1), strip.getModeCount()-1), 0);
-  effectCurrent = modes_alpha_indexes[effectCurrentIndex];
+  do {
+    // effectCurrentIndex = max(min((increase ? effectCurrentIndex+1 : effectCurrentIndex-1), strip.getModeCount()-1), 0);
+    if (increase) {
+        effectCurrentIndex = (effectCurrentIndex + 1) % strip.getModeCount();
+    } else {
+        // Wenn man nach links geht und < 0, auf das letzte Element springen
+        effectCurrentIndex = (effectCurrentIndex + strip.getModeCount() - 1) % strip.getModeCount();
+    }
+    effectCurrent = modes_alpha_indexes[effectCurrentIndex];
+    if (effectCurrentIndex == 0) break;
+  } while (!isFxVisible(effectCurrent));
+
+  #ifdef WLED_DEBUG
+    DEBUG_PRINT(F("effectCurrentIndex: "));
+    DEBUG_PRINTLN(effectCurrentIndex);
+    DEBUG_PRINT(F("effectCurrent: "));
+    DEBUG_PRINTLN(effectCurrent);
+    DEBUG_PRINT(F("isMatrixActive: "));
+    DEBUG_PRINTLN(isMatrixActive());
+  #endif
   stateChanged = true;
   if (applyToAll) {
     for (unsigned i=0; i<strip.getSegmentsNum(); i++) {
@@ -1088,11 +1247,14 @@ void RotaryEncoderUIUsermod::addToConfig(JsonObject &root) {
   top[FPSTR(_pcf8574)]    = usePcf8574;
   top[FPSTR(_pcfAddress)] = addrPcf8574;
   top[FPSTR(_pcfINTpin)]  = pinIRQ;
+  top[FPSTR(_selectStateDefault)] = select_state;
   DEBUG_PRINTLN(F("Rotary Encoder config saved."));
 }
 
 void RotaryEncoderUIUsermod::appendConfigData() {
   oappend(F("addInfo('Rotary-Encoder:PCF8574-address',1,'<i>(not hex!)</i>');"));
+  oappend(F("addInfo('Rotary-Encoder:select-state-default',1,'0 ... 4');"));
+  oappend(F("d.extra.push({'Rotary-Encoder':{'select-state-default':[['Main Color',0],['Saturation',1],['Brightness',2],['Color Palette',3],['Effect',4]]}});"));
   oappend(F("d.extra.push({'Rotary-Encoder':{pin:[['P0',100],['P1',101],['P2',102],['P3',103],['P4',104],['P5',105],['P6',106],['P7',107]]}});"));
 }
 
@@ -1114,6 +1276,7 @@ bool RotaryEncoderUIUsermod::readFromConfig(JsonObject &root) {
   int8_t newSWpin  = top[FPSTR(_SW_pin)]  | pinC;
   int8_t newIRQpin = top[FPSTR(_pcfINTpin)] | pinIRQ;
   bool   oldPcf8574 = usePcf8574;
+  unsigned char newSelectState = top[FPSTR(_selectStateDefault)] | SELECT_STATE_DEFAULT;
 
   presetHigh = top[FPSTR(_presetHigh)] | presetHigh;
   presetLow  = top[FPSTR(_presetLow)]  | presetLow;
@@ -1125,6 +1288,34 @@ bool RotaryEncoderUIUsermod::readFromConfig(JsonObject &root) {
 
   usePcf8574 = top[FPSTR(_pcf8574)] | usePcf8574;
   addrPcf8574 = top[FPSTR(_pcfAddress)] | addrPcf8574;
+
+  // Begrenzung auf 0-4
+  if (newSelectState < 0) newSelectState = 0;
+  if (newSelectState > 4) newSelectState = 11;
+
+  select_state = newSelectState;
+  #ifdef USERMOD_FOUR_LINE_DISPLAY
+    // This Usermod uses FourLineDisplayUsermod for the best experience.
+    // But it's optional. But you want it.
+    display = (FourLineDisplayUsermod*) UsermodManager::lookup(USERMOD_ID_FOUR_LINE_DISP);
+    if (display != nullptr) {
+      switch (select_state) {
+        case  0: display->setMarkLine(    1,   0); break; //1  = sun
+        case  1: display->setMarkLine(    1,   4); break; //2  = skip forward
+        case  2: display->setMarkLine(    1,   8); break; //3  = fire
+        case  3: display->setMarkLine(    2,   0); break; //4  = custom palette
+        case  4: display->setMarkLine(    3,   0); break; //5  = puzzle piece
+/*         case  5: display->setMarkLine(  255, 255); break; //7  = brush
+        case  6: display->setMarkLine(  255, 255); break; //8  = contrast
+        case  7: display->setMarkLine(  255, 255); break; //10 = star
+        case  8: display->setMarkLine(  255, 255); break; //11 = heart
+        case  9: display->setMarkLine(  255, 255); break; //10 = star
+        case 10: display->setMarkLine(  255, 255); break; //10 = star
+        case 11: display->setMarkLine(  255, 255); break; //10 = star */
+      }
+    }
+
+  #endif
 
   DEBUG_PRINT(FPSTR(_name));
   if (!initDone) {
@@ -1157,6 +1348,7 @@ bool RotaryEncoderUIUsermod::readFromConfig(JsonObject &root) {
         enabled = false;
         return true;
       }
+      
       setup();
     }
   }
@@ -1177,6 +1369,7 @@ const char RotaryEncoderUIUsermod::_applyToAll[] PROGMEM = "apply-2-all-seg";
 const char RotaryEncoderUIUsermod::_pcf8574[]    PROGMEM = "use-PCF8574";
 const char RotaryEncoderUIUsermod::_pcfAddress[] PROGMEM = "PCF8574-address";
 const char RotaryEncoderUIUsermod::_pcfINTpin[]  PROGMEM = "PCF8574-INT-pin";
+const char RotaryEncoderUIUsermod::_selectStateDefault[] PROGMEM = "select-state-default";
 
 
 static RotaryEncoderUIUsermod usermod_v2_rotary_encoder_ui_alt;

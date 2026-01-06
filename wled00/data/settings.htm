@@ -25,12 +25,12 @@
 			margin: 0;
 		}
 		html {
-			--h: 9vh;
+			--h: 8vh;
 		}
 		button {
 			display: block;
 			border-radius: var(--h);
-			font-size: 6vmin;
+			font-size: 5vmin;
 			height: var(--h);
 			width: calc(100% - 40px);
 			margin: 2vh auto 0;
@@ -40,6 +40,7 @@
 </head>
 <body>
 <button type=submit id="b" onclick="window.location=getURL('/')">Back</button>
+<button type=submit onclick="window.location=getURL('/edit')">WLED File Editor</button>
 <button type="submit" onclick="window.location=getURL('/settings/wifi')">WiFi Setup</button>
 <button type="submit" onclick="window.location=getURL('/settings/leds')">LED Preferences</button>
 <button id="2dbtn" type="submit" onclick="window.location=getURL('/settings/2D')">2D Configuration</button>

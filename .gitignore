@@ -14,6 +14,9 @@ esp01-update.sh
 platformio_override.ini
 replace_fs.py
 wled-update.sh
+extensions.json
+my_platformio_override.ini.*
+*.patch
 
 /build_output/
 /node_modules/
