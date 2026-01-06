@@ -24,3 +24,17 @@
 
 //#define MAX_LEDS 1500       // Maximum total LEDs. More than 1500 might create a low memory situation on ESP8266.
 //#define MDNS_NAME "wled"    // mDNS hostname, ie: *.local
+
+#ifndef PUBLIC
+  #ifndef CLIENT_SSID
+    #define CLIENT_SSID "Your_SSID"
+  #endif
+
+  #ifndef CLIENT_PASS
+    #define CLIENT_PASS "Your_Password"
+  #endif
+#endif
+
+#ifndef MDNS_NAME
+  #define MDNS_NAME "my-wled"
+#endif
