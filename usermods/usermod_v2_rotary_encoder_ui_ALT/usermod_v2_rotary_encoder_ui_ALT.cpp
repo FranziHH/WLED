@@ -617,8 +617,6 @@ void RotaryEncoderUIUsermod::setup()
     display->setMarkLine(1, 0);
   }
   */
-  if (select_state < 0) select_state = 0;
-  if (select_state > LAST_UI_STATE) select_state = LAST_UI_STATE;
   setNewState(select_state, false);
 #endif
 
@@ -1252,7 +1250,6 @@ void RotaryEncoderUIUsermod::addToConfig(JsonObject &root) {
 void RotaryEncoderUIUsermod::appendConfigData() {
   oappend(F("addInfo('Rotary-Encoder:PCF8574-address',1,'<i>(not hex!)</i>');"));
   oappend("addInfo('Rotary-Encoder:state-default',1,'0 ... " + String(LAST_UI_STATE) + "');");
-  // oappend(F("d.extra.push({'Rotary-Encoder':{'state-default':[['Main Color',0],['Saturation',1],['Brightness',2],['Color Palette',3],['Effect',4]]}});"));
   oappend(F("d.extra.push({'Rotary-Encoder':{pin:[['P0',100],['P1',101],['P2',102],['P3',103],['P4',104],['P5',105],['P6',106],['P7',107]]}});"));
 }
 
@@ -1290,12 +1287,6 @@ bool RotaryEncoderUIUsermod::readFromConfig(JsonObject &root) {
   if (newSelectState < 0) newSelectState = 0;
   if (newSelectState > LAST_UI_STATE) newSelectState = LAST_UI_STATE;
   select_state = stateDefault = newSelectState;
-  #ifdef USERMOD_FOUR_LINE_DISPLAY
-    // This Usermod uses FourLineDisplayUsermod for the best experience.
-    // But it's optional. But you want it.
-    display = (FourLineDisplayUsermod*) UsermodManager::lookup(USERMOD_ID_FOUR_LINE_DISP);
-    setNewState(select_state, false);
-  #endif
 
   DEBUG_PRINT(FPSTR(_name));
   if (!initDone) {

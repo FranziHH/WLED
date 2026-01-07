@@ -1054,10 +1054,13 @@ bool FourLineDisplayUsermod::readFromConfig(JsonObject& root) {
       startDisplay();
       needsRedraw |= true;
     } else {
+      DEBUG_PRINTLN(F("(Re)Starting display."));
       u8x8->setBusClock(ioFrequency); // can be used for SPI too
       setVcomh(contrastFix);
       setContrast(contrast);
       setFlipMode(flip);
+      setPowerSave(0);
+      needsRedraw = true;
     }
     knownHour = 99;
     if (needsRedraw && !wakeDisplay()) redraw(true);
