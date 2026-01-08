@@ -1286,10 +1286,11 @@ bool RotaryEncoderUIUsermod::readFromConfig(JsonObject &root) {
 
   if (newSelectState < 0) newSelectState = 0;
   if (newSelectState > LAST_UI_STATE) newSelectState = LAST_UI_STATE;
-  select_state = stateDefault = newSelectState;
+  stateDefault = newSelectState;
 
   DEBUG_PRINT(FPSTR(_name));
   if (!initDone) {
+    select_state = stateDefault;
     // first run: reading from cfg.json
     pinA = newDTpin;
     pinB = newCLKpin;
