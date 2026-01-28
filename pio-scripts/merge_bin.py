@@ -80,5 +80,4 @@ def merge_bin_action(source, target, env):
     env.Execute(" ".join(cmd))
 
 # Registrierung des Scripts nach dem Build
-# env.AddPostAction("$BUILD_DIR/${PROGNAME}.bin", merge_bin_action)
-env.AddPostAction("buildprog", merge_bin_action)
+env.AddPostAction("$BUILD_DIR/${PROGNAME}.bin", merge_bin_action)
