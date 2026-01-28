@@ -1,7 +1,25 @@
 import os
 import re
+import sys
+import subprocess
 Import("env")
 import json
+
+python_path = sys.executable
+
+try:
+    import esptool
+    major_version = int(esptool.__version__.split('.')[0])
+    
+    if major_version < 5:
+        print(f"--- VERSION {esptool.__version__} ZU ALT. UPDATE AUF 5.1 ---")
+        subprocess.check_call([python_path, "-m", "pip", "install", "esptool==5.1"])
+        import importlib
+        importlib.reload(esptool)
+except (ImportError, ValueError):
+    print("--- INSTALLIERE ESPTOOL 5.1 ---")
+    subprocess.check_call([python_path, "-m", "pip", "install", "esptool==5.1"])
+    import esptool
 
 def merge_bin_action(source, target, env):
     # 1. Den Release-Namen aus den Build-Flags extrahieren
@@ -44,7 +62,7 @@ def merge_bin_action(source, target, env):
 
     # 3. Das esptool Kommando zusammenbauen
     cmd = [
-        "\"$PYTHONEXE\"", "-m", "esptool", "--chip", "esp32s3", "merge_bin",
+        f'"{python_path}"', "-m", "esptool", "--chip", "esp32s3", "merge_bin",
         "-o", f"\"{output_file}\"",
         "0x0000", f"\"{bootloader}\"",
         "0x8000", f"\"{partitions}\"",
