@@ -2,15 +2,15 @@
 set PIO_EXE=%USERPROFILE%\.platformio\penv\Scripts\platformio.exe
 set ENV_NAME=unknown
 
-IF "%1"=="RD" set ENV_NAME=esp32dev_Rotary_Display
-IF "%1"=="PUBLIC" set ENV_NAME=esp32-s3_4m_mini_lepro_tb1_public
-IF "%1"=="PRIVATE" set ENV_NAME=esp32-s3_4m_mini_lepro_tb1_private
-IF "%1"=="S3" set ENV_NAME=esp32-s3_4m_mini
-IF "%1"=="DOM" set ENV_NAME=esp32_domarem
+IF /I "%1"=="RD" set ENV_NAME=esp32dev_Rotary_Display
+IF /I "%1"=="PUBLIC" set ENV_NAME=esp32-s3_4m_mini_lepro_tb1_public
+IF /I "%1"=="PRIVATE" set ENV_NAME=esp32-s3_4m_mini_lepro_tb1_private
+IF /I "%1"=="S3" set ENV_NAME=esp32-s3_4m_mini
+IF /I "%1"=="DOM" set ENV_NAME=esp32_domarem
 
 IF "%ENV_NAME%"=="unknown" (
     echo ==========================================
-    echo ERROR: kein ENV angegeben!
+    echo ERROR: ENV nicht gefunden
     echo ==========================================
     echo RD      esp32dev_Rotary_Display
     echo PUBLIC  esp32-s3_4m_mini_lepro_tb1_public
