@@ -114,6 +114,8 @@ static_assert(WLED_MAX_BUSSES <= 32, "WLED_MAX_BUSSES exceeds hard limit");
   #endif
 #endif
 
+#define RELAY_DELAY 50 // delay in ms between switching on relay and sending data to LEDs
+
 #if defined(ESP8266) || defined(CONFIG_IDF_TARGET_ESP32S2)
 #define WLED_MAX_COLOR_ORDER_MAPPINGS 5
 #else
@@ -208,6 +210,12 @@ static_assert(WLED_MAX_BUSSES <= 32, "WLED_MAX_BUSSES exceeds hard limit");
 #define USERMOD_ID_RF433                 56     //Usermod "usermod_v2_RF433.h"
 #define USERMOD_ID_BRIGHTNESS_FOLLOW_SUN 57     //Usermod "usermod_v2_brightness_follow_sun.h"
 #define USERMOD_ID_USER_FX               58     //Usermod "user_fx"
+
+//Wifi encryption type
+#ifdef WLED_ENABLE_WPA_ENTERPRISE
+  #define WIFI_ENCRYPTION_TYPE_PSK          0     //None/WPA/WPA2
+  #define WIFI_ENCRYPTION_TYPE_ENTERPRISE   1     //WPA/WPA2-Enterprise
+#endif
 
 //Access point behavior
 #define AP_BEHAVIOR_BOOT_NO_CONN          0     //Open AP when no connection after boot
