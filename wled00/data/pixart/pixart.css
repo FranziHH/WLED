@@ -322,3 +322,10 @@ a:active {
   background-color: transparent;
   text-decoration: none;
 }
+
+.btn {
+	border: 2px solid #555;
+}
+.btn:hover {
+	border-color: #48a;
+}

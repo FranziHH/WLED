@@ -322,6 +322,12 @@ writeChunks(
       filter: "html-minify",
     },
     {
+      file: "settings_adv.htm",
+      name: "PAGE_settings_adv",
+      method: "gzip",
+      filter: "html-minify",
+    },
+    {
       file: "settings_wifi.htm",
       name: "PAGE_settings_wifi",
       method: "gzip",

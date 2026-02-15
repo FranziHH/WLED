@@ -364,6 +364,11 @@ void initServer()
     serveSettings(request);
   });
 
+  //advanced settings page
+  server.on(F("/settings_adv"), HTTP_GET, [](AsyncWebServerRequest *request){
+    serveSettings(request);
+  });
+
   // "/settings/settings.js&p=x" request also handled by serveSettings()
   static const char _style_css[] PROGMEM = "/style.css";
   server.on(_style_css, HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -727,6 +732,7 @@ void serveSettings(AsyncWebServerRequest* request, bool post) {
     else if (url.indexOf(  "sync")  > 0) subPage = SUBPAGE_SYNC;
     else if (url.indexOf(  "time")  > 0) subPage = SUBPAGE_TIME;
     else if (url.indexOf(F("sec"))  > 0) subPage = SUBPAGE_SEC;
+    else if (url.indexOf(F("adv"))  > 0) subPage = SUBPAGE_ADV;
 #ifdef WLED_ENABLE_DMX
     else if (url.indexOf(  "dmx")   > 0) subPage = SUBPAGE_DMX;
 #endif
@@ -770,6 +776,7 @@ void serveSettings(AsyncWebServerRequest* request, bool post) {
       case SUBPAGE_SYNC   : strcpy_P(s, PSTR("Sync")); break;
       case SUBPAGE_TIME   : strcpy_P(s, PSTR("Time")); break;
       case SUBPAGE_SEC    : strcpy_P(s, PSTR("Security")); if (doReboot) strcpy_P(s2, PSTR("Rebooting, please wait ~10 seconds...")); break;
+      case SUBPAGE_ADV    : strcpy_P(s, PSTR("ADV")); break;
 #ifdef WLED_ENABLE_DMX
       case SUBPAGE_DMX    : strcpy_P(s, PSTR("DMX")); break;
 #endif
@@ -805,6 +812,7 @@ void serveSettings(AsyncWebServerRequest* request, bool post) {
     case SUBPAGE_SYNC    :  content = PAGE_settings_sync; len = PAGE_settings_sync_length; break;
     case SUBPAGE_TIME    :  content = PAGE_settings_time; len = PAGE_settings_time_length; break;
     case SUBPAGE_SEC     :  content = PAGE_settings_sec;  len = PAGE_settings_sec_length;  break;
+    case SUBPAGE_ADV     :  content = PAGE_settings_adv;  len = PAGE_settings_adv_length;  break;
 #ifdef WLED_ENABLE_DMX
     case SUBPAGE_DMX     :  content = PAGE_settings_dmx;  len = PAGE_settings_dmx_length;  break;
 #endif

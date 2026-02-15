@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+	<title>Advanced Settings</title>
+	<script>
+		// load common.js with retry on error
+		(function loadFiles() {
+			const l = document.createElement('script');
+			l.src = 'common.js';
+			// load style.css then initialize
+			l.onload = () => loadResources(['style.css'], () => {
+				getLoc();
+				loadJS(getURL('/settings/s.js?p=0'), false);
+			});
+			l.onerror = () => setTimeout(loadFiles, 100);
+			document.head.appendChild(l);
+		})();
+	</script>
+	<style>
+	  @import url("style.css");
+		body {
+			height: 100px;
+			margin: 0;
+		}
+		html {
+			--h: 8vh;
+		}
+		button {
+			display: block;
+			border-radius: var(--h);
+			font-size: 5vmin;
+			height: var(--h);
+			width: calc(100% - 40px);
+			margin: 2vh auto 0;
+			padding: 0;
+		}
+	</style>
+</head>
+<body>
+<button type=submit id="b" onclick="window.location=getURL('/')">Back to the controls</button>
+<button type=submit onclick="window.location=getURL('/settings')">Back to the settings</button>
+<button type=submit onclick="window.location=getURL('/edit')">WLED File Editor</button>
+<!-- <button type=submit onclick="window.open(getURL('/pixart.htm'), '_blank')">WLED Pixel Art Converter</button> -->
+<button type=submit onclick="window.location=getURL('/pixart.htm')">WLED Pixel Art Converter</button>
+<button type=submit onclick="window.location=getURL('/pixelforge.htm')">WLED PixelForge</button>
+<button type=submit onclick="window.location=getURL('/pxmagic.htm')">PIXEL MAGIC TOOL</button>
+</body>
+</html>
