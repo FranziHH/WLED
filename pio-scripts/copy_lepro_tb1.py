@@ -26,20 +26,26 @@ def copy_bin(source, target, env):
     merge_dir = os.path.join(project_dir, "build_output", "merge")
     docs_dir = os.path.abspath(project_dir + "/../Lepro TB1 WLED/docs")
     fw_dir = os.path.abspath(docs_dir + "/firmware")
+    fw_dir_local = os.path.abspath(project_dir + "/firmware/lepro_tb1")
 
     # create folder
     os.makedirs(fw_dir, exist_ok=True)
-    
+    os.makedirs(fw_dir_local, exist_ok=True)
+
     source_file = os.path.join(release_dir, f"WLED_{version}_{release_name}.bin")
     ota_file = f"{current_date}_WLED_{version}_{release_name}_ota.bin"
     output_file = os.path.join(fw_dir, ota_file)
+    shutil.copy(source_file, output_file)
+    output_file = os.path.join(fw_dir_local, ota_file)
     shutil.copy(source_file, output_file)
 
     source_file = os.path.join(merge_dir, f"WLED_{version}_{release_name}_full.bin")
     full_file = f"{current_date}_WLED_{version}_{release_name}_full.bin"
     output_file = os.path.join(fw_dir, full_file)
     shutil.copy(source_file, output_file)
-    
+    output_file = os.path.join(fw_dir_local, full_file)
+    shutil.copy(source_file, output_file)
+
     json_path = os.path.join(docs_dir, "versions.json")
     if os.path.exists(json_path):
         with open(json_path, 'r', encoding='utf-8') as f:
