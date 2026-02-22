@@ -701,29 +701,14 @@ void serializeInfo(JsonObject root)
   root[F("release")] = releaseString;
   root[F("repo")] = repoString;
   root[F("deviceId")] = getDeviceId();
-
-  /* Generate Build Date */
-  char build_str[20];
-  const char *months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
-  char m_name[4];
-  int d, y, hh, mm, ss;
-
-  // __DATE__ ist "Mmm dd yyyy", __TIME__ ist "hh:mm:ss"
-  sscanf(__DATE__, "%s %d %d", m_name, &d, &y);
-  sscanf(__TIME__, "%d:%d:%d", &hh, &mm, &ss);
-
-  int m = 0;
-  for (int i = 0; i < 12; i++) {
-      if (strcmp(m_name, months[i]) == 0) {
-          m = i + 1;
-          break;
-      }
-  }
-
-  //snprintf_P(build_str, 20, PSTR("%04d-%02d-%02d, %02d:%02d:%02d"), y, m, d, hh, mm, ss);
-  snprintf_P(build_str, 20, PSTR("%04d-%02d-%02d, %02d:%02d"), y, m, d, hh, mm);
-  root[F("bdate")] = build_str;
-  /* Generate Build Date */
+  
+  /* Get Build Date */
+  #if __has_include("../build_ts.txt")
+    root[F("build_ts")] = 
+  #include "../build_ts.txt"
+  ;
+  #endif
+  /* Get Build Date */
   
   JsonObject leds = root.createNestedObject(F("leds"));
   leds[F("count")] = strip.getLengthTotal();

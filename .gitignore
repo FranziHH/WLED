@@ -35,3 +35,5 @@ extensions.json
 /wled00/wled00.ino.cpp
 /wled00/html_*.h
 /wled00/js_*.h
+
+build_ts.txt

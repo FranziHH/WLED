@@ -103,10 +103,18 @@ function adoptVersionAndRepo(html) {
   if (version) {
     html = html.replaceAll("##VERSION##", version);
   }
-  const now = new Date();
-  // const dateStr = now.getFullYear() + "-" + (now.getMonth()+1).toString().padStart(2, '0') + "-" + now.getDate().toString().padStart(2, '0') + ", " + now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-  const dateStr = now.getFullYear() + "-" + (now.getMonth()+1).toString().padStart(2, '0') + "-" + now.getDate().toString().padStart(2, '0');
-  html = html.replaceAll("##BUILD_DATE##", dateStr);
+
+  /* Get Build Date */
+  const filePath = path.join(__dirname, '..', 'build_ts.txt');
+  let dateStr = "";
+  if (fs.existsSync(filePath)) {
+      dateStr = fs.readFileSync(filePath, "utf8").replace(/"/g, '').trim();
+      html = html.replaceAll("##BUILD_TS##", 'Build Date: <span class="sip">' + dateStr + '</span>');
+  } else {
+    html = html.replaceAll("##BUILD_TS##", " ");
+  }
+  /* Get Build Date */
+
   return html;
 }
 
@@ -250,7 +258,9 @@ if (process.env.NODE_ENV === 'test') {
 
 console.info(wledBanner);
 
-if (isAlreadyBuilt("wled00/data") && process.argv[2] !== '--force' && process.argv[2] !== '-f') {
+const forceActive = process.env.FORCE_REBUILD === 'true';
+// console.log("FORCE_REBUILD ist:", forceActive);
+if (isAlreadyBuilt("wled00/data") && !forceActive && process.argv[2] !== '--force' && process.argv[2] !== '-f') {
   console.info("Web UI is already built");
   return;
 }

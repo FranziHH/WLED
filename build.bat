@@ -21,6 +21,9 @@ IF "%ENV_NAME%"=="unknown" (
     exit /b 1
 )
 
+echo "%DATE:~-4%-%DATE:~3,2%-%DATE:~0,2%, %TIME:~0,8%" > build_ts.txt
+set FORCE_REBUILD=true
+
 echo ==========================================
 echo STARTE BUILD PROZESS FUER: %ENV_NAME%
 echo ==========================================
@@ -44,6 +47,8 @@ echo ==========================================
 echo BUILD ERFOLGREICH ABGESCHLOSSEN!
 echo ==========================================
 :: pause
+if exist build_ts.txt del /f /q build_ts.txt
+set FORCE_REBUILD=
 exit /b 0
 
 :error
@@ -52,4 +57,6 @@ echo !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 echo FEHLER BEIM BUILD PROZESS!
 echo !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 :: pause
+if exist build_ts.txt del /f /q build_ts.txt
+set FORCE_REBUILD=
 exit /b 1
