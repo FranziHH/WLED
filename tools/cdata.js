@@ -93,7 +93,13 @@ function hexdump(buffer, isHex = false) {
 
 function adoptVersionAndRepo(html) {
   let repoUrl = packageJson.repository ? packageJson.repository.url : undefined;
-  if (repoUrl) {
+  let customUrl = process.env.WLED_CUSTOM_URL;
+  if (customUrl) {
+    customUrl = customUrl.replace(/["']/g, "");
+    html = html.replaceAll("https://github.com/atuline/WLED/releases", customUrl);
+    html = html.replaceAll("https://github.com/wled-dev/WLED/releases", customUrl);
+    html = html.replaceAll("https://img.shields.io/github/release/wled-dev/WLED.svg", "https://img.shields.io/badge/version-16.0--alpha-blue.svg");
+  } else if (repoUrl) {
     repoUrl = repoUrl.replace(/^git\+/, "");
     repoUrl = repoUrl.replace(/\.git$/, "");
     html = html.replaceAll("https://github.com/atuline/WLED", repoUrl);

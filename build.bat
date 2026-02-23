@@ -23,6 +23,11 @@ IF "%ENV_NAME%"=="unknown" (
 
 echo "%DATE:~-4%-%DATE:~3,2%-%DATE:~0,2%, %TIME:~0,8%" > build_ts.txt
 set FORCE_REBUILD=true
+IF /I "%1"=="RD" set WLED_CUSTOM_URL="https://github.com/FranziHH/WLED/tree/main-FranziHH/firmware/rotary"
+IF /I "%1"=="PUBLIC" set WLED_CUSTOM_URL="https://github.com/FranziHH/WLED/tree/main-FranziHH/firmware/lepro_tb1"
+IF /I "%1"=="PRIVATE" set WLED_CUSTOM_URL="https://github.com/FranziHH/WLED/tree/main-FranziHH/firmware/lepro_tb1"
+IF /I "%1"=="S3" set WLED_CUSTOM_URL="https://github.com/FranziHH/WLED/tree/main-FranziHH/firmware/s3_4m_mini"
+IF /I "%1"=="DOM" set WLED_CUSTOM_URL="https://github.com/FranziHH/WLED/tree/main-FranziHH/firmware/domarem"
 
 echo ==========================================
 echo STARTE BUILD PROZESS FUER: %ENV_NAME%
@@ -49,6 +54,7 @@ echo ==========================================
 :: pause
 if exist build_ts.txt del /f /q build_ts.txt
 set FORCE_REBUILD=
+set WLED_CUSTOM_URL=
 exit /b 0
 
 :error
@@ -59,4 +65,5 @@ echo !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 :: pause
 if exist build_ts.txt del /f /q build_ts.txt
 set FORCE_REBUILD=
+set WLED_CUSTOM_URL=
 exit /b 1
