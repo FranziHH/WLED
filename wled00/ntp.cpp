@@ -316,7 +316,7 @@ void getTimeString(char* out)
     if (hr > 11) hr -= 12;
     if (hr == 0) hr  = 12;
   }
-  sprintf_P(out,PSTR("%i-%i-%i, %02d:%02d:%02d"),year(localTime), month(localTime), day(localTime), hr, minute(localTime), second(localTime));
+  sprintf_P(out,PSTR("%04d-%02d-%02d, %02d:%02d:%02d"),year(localTime), month(localTime), day(localTime), hr, minute(localTime), second(localTime));
   if (useAMPM)
   {
     strcat_P(out,PSTR(" "));
