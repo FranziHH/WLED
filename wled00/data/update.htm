@@ -25,7 +25,20 @@
 					document.querySelector('.installed-version').textContent = `${data.brand} ${data.ver} (${data.vid})`;
 					document.querySelector('.release-name').textContent = data.release;
 					// assemble update URL and update release badge
-					if (data.repo && data.repo !== "unknown") {
+					if (data.customUrl && data.customUrl !== "unknown") {
+						// Pfad für deine eigenen Builds
+						const repoUrl = data.customUrl;
+						let badgeUrl;
+						if (data.customBadge && data.customBadge !== "unknown") {
+							badgeUrl = data.customBadge;
+						} else {
+							badgeUrl = "https://img.shields.io/github/release/" + data.repo + ".svg?style=flat-square";
+						}
+						document.querySelector('.release-repo').href = repoUrl;
+						document.querySelector('.release-badge').src = badgeUrl;
+						toggle('release-download'); // only show release download item after receiving a valid data.repo
+					} else 
+						if (data.repo && data.repo !== "unknown") {
 						const repoUrl = "https://github.com/" + data.repo + "/releases/latest";
 						const badgeUrl = "https://img.shields.io/github/release/" + data.repo + ".svg?style=flat-square";
 						document.querySelector('.release-repo').href = repoUrl;

@@ -701,7 +701,22 @@ void serializeInfo(JsonObject root)
   root[F("release")] = releaseString;
   root[F("repo")] = repoString;
   root[F("deviceId")] = getDeviceId();
-  
+
+  #ifdef WLED_CUSTOM_URL
+    if (WLED_CUSTOM_URL[0] != '\0') {
+      root[F("customUrl")] = WLED_CUSTOM_URL;
+    } else  {
+      root[F("customUrl")] = "unknown";
+    }
+  #endif
+  #ifdef WLED_CUSTOM_BADGE
+    if (WLED_CUSTOM_BADGE[0] != '\0') {
+      root[F("customBadge")] = WLED_CUSTOM_BADGE;
+    } else  {
+      root[F("customBadge")] = "unknown";
+    }
+  #endif
+
   /* Get Build Date */
   #if __has_include("../build_ts.txt")
     root[F("build_ts")] = 
