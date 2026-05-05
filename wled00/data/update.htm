@@ -39,6 +39,8 @@
 						}
 						document.querySelector('.release-repo').href = repoUrl;
 						document.querySelector('.release-badge').src = badgeUrl;
+						// hide this Button on own Releases
+						document.querySelector('#autoUpdBtn').style.display = 'none';
 						toggle('release-download'); // only show release download item after receiving a valid data.repo
 					} else 
 						if (repoUrl) {
