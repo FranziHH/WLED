@@ -1,3 +1,5 @@
+
+
 <p align="center">
   <img src="/images/wled_logo_akemi.png">
   <a href="https://github.com/wled-dev/WLED/releases"><img src="https://img.shields.io/github/release/wled-dev/WLED.svg?style=flat-square"></a>
@@ -8,6 +10,11 @@
   <a href="https://github.com/Aircoookie/WLED-App"><img src="https://img.shields.io/badge/app-wled-blue.svg?style=flat-square"></a>
   <a href="https://gitpod.io/#https://github.com/wled-dev/WLED"><img src="https://img.shields.io/badge/Gitpod-ready--to--code-blue?style=flat-square&logo=gitpod"></a>
 </p>
+
+# Important 2026-07-20
+
+I will not be integrating the changes to ESP V5 at this time.
+The changes are too extensive; I don't have the time.
 
 # Welcome to WLED! ✨
 
